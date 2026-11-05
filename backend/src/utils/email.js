@@ -1,31 +1,31 @@
-
 export async function sendLinkEmail({ to, subject, url }) {
-  const apiKey = process.env.RESEND_API_KEY;
+  const scriptUrl = process.env.GMAIL_SCRIPT_URL;
+  const secret = process.env.GMAIL_SCRIPT_SECRET;
 
-  if (!apiKey) {
-    throw new Error("RESEND_API_KEY is missing");
+  if (!scriptUrl || !secret) {
+    throw new Error("Gmail Apps Script configuration is missing");
   }
 
-  const response = await fetch("https://api.resend.com/emails", {
+  const response = await fetch(scriptUrl, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      from: process.env.RESEND_FROM || "V2 CodeZero <onboarding@resend.dev>",
-      to: [to],
+      secret,
+      to,
       subject,
-      text: `Open this secure link: ${url}`
-    })
+      url
+    }),
+    redirect: "follow"
   });
 
   const result = await response.json();
 
-  if (!response.ok) {
-    throw new Error(`Resend email failed: ${JSON.stringify(result)}`);
+  if (!response.ok || !result.success) {
+    throw new Error(`Email failed: ${result.message || "Unknown error"}`);
   }
 
-  console.log("Email sent successfully:", result.id);
+  console.log("Activation email sent successfully");
   return true;
 }
