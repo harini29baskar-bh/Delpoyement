@@ -150,7 +150,7 @@ r.post("/auth/login", async (req, res) => {
   res.cookie("accessToken", token, {
     httpOnly: true,
     secure: process.env.COOKIE_SECURE === "true",
-    sameSite: "lax",
+    sameSite: "none",
     maxAge: 8 * 60 * 60 * 1000
   });
 
